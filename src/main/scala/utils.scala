@@ -49,7 +49,11 @@ object utils {
     type Aux[L <: HList, S <: HList] = Subset[L] { type Out = S }
     def apply[L <: HList, S <: HList](implicit f: Subset.Aux[L, S]) = f
 
-    implicit def hcons[L <: HList, H, T <: HList](implicit find: Find[L, H], subset: Lazy[Subset.Aux[L, T]]) = new Subset[L] {
+    implicit def hcons[L <: HList, H, T <: HList](
+      implicit
+      find: Find[L, H],
+      subset: Lazy[Subset.Aux[L, T]]
+    ) = new Subset[L] {
       type Out = H :: T
       def apply(l: L) =
         (l.find[H] |@| subset.value(l)) {

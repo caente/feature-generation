@@ -52,6 +52,11 @@ object Main {
       (s, i) =>
         Map("sum" -> (s.size + i + x.size))
 
+    //is possible to have generators with the same context, they will all be used
+    private def featureGenerator3_1(x: String): (String, Int) => Map[String, Int] =
+      (s, i) =>
+        Map("sum2" -> (s.size + i * 2 + x.size))
+
     private def featureGenerator4(x: String): () => Map[String, Int] =
       () =>
         Map("size" -> (x.size))
@@ -60,6 +65,7 @@ object Main {
       applyContext(context)(featureGenerator1(x)) ++
         applyContext(context)(featureGenerator2(x)) ++
         applyContext(context)(featureGenerator3(x)) ++
+        applyContext(context)(featureGenerator3_1(x)) ++
         applyContext(context)(featureGenerator4(x))
     }
   }
@@ -98,33 +104,36 @@ object Main {
       "hi".features(FeatureGenerator.NoContext()) === Map("size" -> 2)
     )
     assert(
-      "hi".features(1, 2d) == Map("ave" -> 3, "dev" -> 1, "size" -> 2)
+      "hi".features(1, 2d) === Map("ave" -> 3, "dev" -> 1, "size" -> 2)
     )
     assert(
-      "hi".features("a", 1) == Map("sum" -> 4, "dev" -> 1, "size" -> 2)
+      "hi".features("a", 1) === Map("sum" -> 4, "sum2" -> 5, "dev" -> 1, "size" -> 2)
     )
     case class OneInt(i: Int)
     assert(
-      "hi".features(OneInt(1)) == Map("dev" -> 1, "size" -> 2)
+      "hi".features(OneInt(1)) === Map("dev" -> 1, "size" -> 2)
     )
     // the order of the arguments doesn't matter
     assert(
-      "hi".features(2d, 1, "a") == Map("sum" -> 4, "dev" -> 1, "ave" -> 3, "size" -> 2)
+      "hi".features(2d, 1, "a") === Map("sum" -> 4, "sum2" -> 5, "dev" -> 1, "ave" -> 3, "size" -> 2)
     )
 
     // feature generators with no X
     assert(
-      FeatureGenerator.Labeless.features(1, 2d) == Map("ave" -> 3, "dev" -> 1)
+      FeatureGenerator.Labeless.features(FeatureGenerator.NoContext()).isEmpty
     )
     assert(
-      FeatureGenerator.Labeless.features("a", 1) == Map("sum" -> 2, "dev" -> 1)
+      FeatureGenerator.Labeless.features(1, 2d) === Map("ave" -> 3, "dev" -> 1)
     )
     assert(
-      FeatureGenerator.Labeless.features(OneInt(1)) == Map("dev" -> 1)
+      FeatureGenerator.Labeless.features("a", 1) === Map("sum" -> 2, "dev" -> 1)
+    )
+    assert(
+      FeatureGenerator.Labeless.features(OneInt(1)) === Map("dev" -> 1)
     )
     // the order of the arguments doesn't matter
     assert(
-      FeatureGenerator.Labeless.features(2d, 1, "a") == Map("sum" -> 2, "dev" -> 1, "ave" -> 3)
+      FeatureGenerator.Labeless.features(2d, 1, "a") === Map("sum" -> 2, "dev" -> 1, "ave" -> 3)
     )
 
   }
