@@ -1,6 +1,10 @@
-scalaVersion := "2.12.1"
+scalaVersion := "2.11.8"
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+
+scalacOptions ++= Seq(
+//        "-Xlog-implicits"
+      )
 
 libraryDependencies ++= Seq(
   "com.chuusai" %% "shapeless" % "2.3.2",
