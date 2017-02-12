@@ -39,14 +39,10 @@ object utils {
 
     implicit def hcons[L <: HList, H, T <: HList](implicit find: Find[L, H], ft: Lazy[Subset.Aux[L, T]]) = new Subset[L] {
       type Out = H :: T
-      def subset(l: L) = {
-        l match {
-          case HNil => None
-          case l => (l.find[H] |@| ft.value.subset(l)) {
-            (h, t) => h :: t
-          }
+      def subset(l: L) =
+        (l.find[H] |@| ft.value.subset(l)) {
+          (h, t) => h :: t
         }
-      }
     }
 
     implicit def hnil[L <: HList]: Subset.Aux[L, HNil] = new Subset[L] {
