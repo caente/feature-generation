@@ -13,6 +13,9 @@ object Main {
   trait FeatureGenerator[X] {
     type Context
     def features(x: X, context: Context): Map[String, Int]
+  }
+
+  object FeatureGenerator {
 
     def applyContext[L <: HList, Args <: HList, F](c: L)(f: F)(
       implicit
@@ -23,9 +26,7 @@ object Main {
         args =>
           f.toProduct(args)
       }.getOrElse(Map.empty)
-  }
 
-  object FeatureGenerator {
     implicit class Ops[X](x: X) {
       def features[C <: Product, L <: HList](context: C)(
         implicit
@@ -45,6 +46,7 @@ object Main {
     sd: Find[L, Double]
   ) = new FeatureGenerator[String] {
     type Context = L
+    import FeatureGenerator.applyContext
 
     private def featureGenerator1(x: String): (Int, Double) => Map[String, Int] =
       (i, d) =>
