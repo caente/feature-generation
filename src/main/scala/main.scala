@@ -9,6 +9,7 @@ import scalaz._, Scalaz._
 object Main {
   import utils.Find
   import utils.Subset
+  import utils.applyContext
 
   trait FeatureGenerator[X] {
     type Context
@@ -16,16 +17,6 @@ object Main {
   }
 
   object FeatureGenerator {
-
-    def applyContext[L <: HList, Args <: HList, F](c: L)(f: F)(
-      implicit
-      subset: Lazy[Subset.Aux[L, Args]],
-      fp: FnToProduct.Aux[F, Args => Map[String, Int]]
-    ): Map[String, Int] =
-      subset.value.subset(c).map {
-        args =>
-          f.toProduct(args)
-      }.getOrElse(Map.empty)
 
     implicit class Ops[X](x: X) {
       def features[C <: Product, L <: HList](context: C)(
@@ -46,7 +37,6 @@ object Main {
     sd: Find[L, Double]
   ) = new FeatureGenerator[String] {
     type Context = L
-    import FeatureGenerator.applyContext
 
     private def featureGenerator1(x: String): (Int, Double) => Map[String, Int] =
       (i, d) =>
@@ -61,10 +51,9 @@ object Main {
         Map("sum" -> (s.size + i + x.size))
 
     def features(x: String, context: Context): Map[String, Int] = {
-      // this type annotations should go away soon, but I haven't figured out how yet, perhaps a macro?
-      applyContext[L, Int :: Double :: HNil, Function2[Int, Double, Map[String, Int]]](context)(featureGenerator1(x)) ++
-        applyContext[L, Int :: HNil, Function1[Int, Map[String, Int]]](context)(featureGenerator2(x)) ++
-        applyContext[L, String :: Int :: HNil, Function2[String, Int, Map[String, Int]]](context)(featureGenerator3(x))
+      applyContext(context)(featureGenerator1(x)) ++
+        applyContext(context)(featureGenerator2(x)) ++
+        applyContext(context)(featureGenerator3(x))
     }
   }
 

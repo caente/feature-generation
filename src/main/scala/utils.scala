@@ -7,6 +7,18 @@ import simulacrum._
 import scalaz._, Scalaz._
 
 object utils {
+
+  def applyContext[L <: HList, Args <: HList, F, R](c: L)(f: F)(
+    implicit
+    fp: FnToProduct.Aux[F, Args => R],
+    subset: Subset.Aux[L, Args],
+    mr: Monoid[R]
+  ): R =
+    subset(c).map {
+      args =>
+        f.toProduct(args)
+    }.getOrElse(mr.zero)
+
   trait Find[L <: HList, A] {
     def find(l: L): Option[A]
   }
@@ -30,24 +42,24 @@ object utils {
 
   trait Subset[L <: HList] {
     type Out <: HList
-    def subset(l: L): Option[Out]
+    def apply(l: L): Option[Out]
   }
 
   object Subset {
     type Aux[L <: HList, S <: HList] = Subset[L] { type Out = S }
     def apply[L <: HList, S <: HList](implicit f: Subset.Aux[L, S]) = f
 
-    implicit def hcons[L <: HList, H, T <: HList](implicit find: Find[L, H], ft: Lazy[Subset.Aux[L, T]]) = new Subset[L] {
+    implicit def hcons[L <: HList, H, T <: HList](implicit find: Find[L, H], subset: Lazy[Subset.Aux[L, T]]) = new Subset[L] {
       type Out = H :: T
-      def subset(l: L) =
-        (l.find[H] |@| ft.value.subset(l)) {
+      def apply(l: L) =
+        (l.find[H] |@| subset.value(l)) {
           (h, t) => h :: t
         }
     }
 
     implicit def hnil[L <: HList]: Subset.Aux[L, HNil] = new Subset[L] {
       type Out = HNil
-      def subset(l: L) = Some(HNil)
+      def apply(l: L) = Some(HNil)
     }
   }
 }
