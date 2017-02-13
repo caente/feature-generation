@@ -85,6 +85,8 @@ object Main {
   object FeatureGenerator {
 
     implicit class Ops[X](x: X) {
+      //instead of product, we could extend some BaseContext,
+      //to be more strict regarding the context possible values
       def features[C <: Product, L <: HList](context: C)(
         implicit
         gen: Generic.Aux[C, L],
