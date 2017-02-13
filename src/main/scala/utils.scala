@@ -8,13 +8,13 @@ import scalaz._, Scalaz._
 
 object utils {
 
-  def applyContext[L <: HList, Args <: HList, F, R](c: L)(f: F)(
+  def applyContext[Context <: HList, Args <: HList, F, R](context: Context)(f: F)(
     implicit
     fp: FnToProduct.Aux[F, Args => R],
-    subset: Subset.Aux[L, Args],
+    subset: Subset.Aux[Context, Args],
     mr: Monoid[R]
   ): R =
-    subset(c).map {
+    subset(context).map {
       args =>
         f.toProduct(args)
     }.getOrElse(mr.zero)
