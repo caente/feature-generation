@@ -33,6 +33,7 @@ object Main {
     }
     case object Labeless
     case class NoContext()
+    def emptyContext: NoContext = NoContext()
   }
 
   // features for String, each feature generator can process several contexts
@@ -111,7 +112,7 @@ object Main {
     import FeatureGenerator.Ops
     // it works with tuples and case classes
     assert(
-      "hi".features(FeatureGenerator.NoContext()) === Map("size" -> 2)
+      "hi".features(FeatureGenerator.emptyContext) === Map("size" -> 2)
     )
     assert(
       "hi".features(1) === Map("dev" -> 1, "size" -> 2)
@@ -129,7 +130,7 @@ object Main {
 
     // feature generators with no X
     assert(
-      FeatureGenerator.Labeless.features(FeatureGenerator.NoContext()) === Map("size" -> 0)
+      FeatureGenerator.Labeless.features(FeatureGenerator.emptyContext) === Map("size" -> 0)
     )
     assert(
       FeatureGenerator.Labeless.features(1) === Map("dev" -> 1, "size" -> 0)
