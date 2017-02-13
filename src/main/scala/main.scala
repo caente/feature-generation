@@ -16,26 +16,6 @@ object Main {
     def features(x: X, context: Context): Map[String, Int]
   }
 
-  object FeatureGenerator {
-
-    implicit class Ops[X](x: X) {
-      def features[C <: Product, L <: HList](context: C)(
-        implicit
-        gen: Generic.Aux[C, L],
-        fg: FeatureGenerator[X] { type Context = L }
-      ) =
-        fg.features(x, gen.to(context))
-      def features[C](context: C)(
-        implicit
-        fg: FeatureGenerator[X] { type Context = C :: HNil }
-      ) =
-        fg.features(x, context :: HNil)
-    }
-    case object Labeless
-    case class NoContext()
-    def emptyContext: NoContext = NoContext()
-  }
-
   // features for String, each feature generator can process several contexts
   // the implicit `Find`s are for the types it _might_ need in its internal generators
   implicit def StringFeatures[L <: HList, F](
@@ -106,6 +86,26 @@ object Main {
         applyContext(context)(featureGenerator3) ++
         applyContext(context)(featureGenerator4)
     }
+  }
+
+  object FeatureGenerator {
+
+    implicit class Ops[X](x: X) {
+      def features[C <: Product, L <: HList](context: C)(
+        implicit
+        gen: Generic.Aux[C, L],
+        fg: FeatureGenerator[X] { type Context = L }
+      ) =
+        fg.features(x, gen.to(context))
+      def features[C](context: C)(
+        implicit
+        fg: FeatureGenerator[X] { type Context = C :: HNil }
+      ) =
+        fg.features(x, context :: HNil)
+    }
+    case object Labeless
+    case class NoContext()
+    def emptyContext: NoContext = NoContext()
   }
 
   def main(args: Array[String]): Unit = {
