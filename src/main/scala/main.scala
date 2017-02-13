@@ -59,32 +59,26 @@ object Main {
   implicit def LabelessFeatures[L <: HList, F](
     implicit
     si: Find[L, Int],
-    ss: Find[L, String],
-    sd: Find[L, Double]
+    ss: Find[L, String]
   ) = new FeatureGenerator[FeatureGenerator.Labeless.type] {
     type Context = L
 
-    private def featureGenerator1: (Int, Double) => Map[String, Int] =
-      (i, d) =>
-        Map("ave" -> (d.toInt + i))
-
-    private def featureGenerator2: (Int) => Map[String, Int] =
+    private def featureGenerator1: (Int) => Map[String, Int] =
       i =>
         Map("dev" -> i)
 
-    private def featureGenerator3: (String, Int) => Map[String, Int] =
+    private def featureGenerator2: (String, Int) => Map[String, Int] =
       (s, i) =>
         Map("sum" -> (s.size + i))
 
-    private def featureGenerator4: () => Map[String, Int] =
+    private def featureGenerator3: () => Map[String, Int] =
       () =>
         Map("size" -> 0)
 
     def features(x: FeatureGenerator.Labeless.type, context: Context): Map[String, Int] = {
       applyContext(context)(featureGenerator1) ++
         applyContext(context)(featureGenerator2) ++
-        applyContext(context)(featureGenerator3) ++
-        applyContext(context)(featureGenerator4)
+        applyContext(context)(featureGenerator3)
     }
   }
 
@@ -136,14 +130,11 @@ object Main {
       FeatureGenerator.Labeless.features(1) === Map("dev" -> 1, "size" -> 0)
     )
     assert(
-      FeatureGenerator.Labeless.features(1, 2d) === Map("ave" -> 3, "dev" -> 1, "size" -> 0)
-    )
-    assert(
       FeatureGenerator.Labeless.features("a", 1) === Map("sum" -> 2, "dev" -> 1, "size" -> 0)
     )
     // the order of the arguments doesn't matter
     assert(
-      FeatureGenerator.Labeless.features(2d, 1, "a") === Map("sum" -> 2, "dev" -> 1, "ave" -> 3, "size" -> 0)
+      FeatureGenerator.Labeless.features(1, "a") === Map("sum" -> 2, "dev" -> 1, "size" -> 0)
     )
 
   }
