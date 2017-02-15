@@ -11,7 +11,7 @@ object utils {
   def applyContext[Context <: HList, Args <: HList, F, R](context: Context)(f: F)(
     implicit
     fp: FnToProduct.Aux[F, Args => R],
-    subset: Subset.Aux[Context, Args],
+    subset: Subset[Context, Args],
     mr: Monoid[R]
   ): R =
     subset(context).map {
@@ -40,29 +40,25 @@ object utils {
   }
   import Find.Ops
 
-  trait Subset[L <: HList] {
-    type Out <: HList
-    def apply(l: L): Option[Out]
+  trait Subset[L <: HList, S <: HList] {
+    def apply(l: L): Option[S]
   }
 
   object Subset {
-    type Aux[L <: HList, S <: HList] = Subset[L] { type Out = S }
-    def apply[L <: HList, S <: HList](implicit f: Subset.Aux[L, S]) = f
+    def apply[L <: HList, S <: HList](implicit f: Subset[L, S]) = f
 
     implicit def hcons[L <: HList, H, T <: HList](
       implicit
       find: Find[L, H],
-      subset: Lazy[Subset.Aux[L, T]]
-    ) = new Subset[L] {
-      type Out = H :: T
+      subset: Lazy[Subset[L, T]]
+    ) = new Subset[L, H :: T] {
       def apply(l: L) =
         (l.find[H] |@| subset.value(l)) {
           (h, t) => h :: t
         }
     }
 
-    implicit def hnil[L <: HList]: Subset.Aux[L, HNil] = new Subset[L] {
-      type Out = HNil
+    implicit def hnil[L <: HList]: Subset[L, HNil] = new Subset[L, HNil] {
       def apply(l: L) = Some(HNil)
     }
   }
