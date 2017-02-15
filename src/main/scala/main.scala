@@ -11,6 +11,50 @@ object Main {
   import utils.Subset
   import utils.applyContext
 
+  trait GeneralFeature {
+    def name: String = ??? // the name comes here
+  }
+
+  trait LabelessFeature extends GeneralFeature {
+    def run: AnyRef
+  }
+
+  object featureGenerator1L extends LabelessFeature {
+    def run = (i: Int) => Map("dev" -> i)
+  }
+  object featureGenerator2L extends LabelessFeature {
+    def run = (s: String, i: Int) => Map("sum" -> (s.size + i))
+  }
+
+  object featureGenerator3L extends LabelessFeature {
+    def run = () => Map("size" -> 0)
+  }
+
+  trait Feature[X] extends GeneralFeature {
+    def run(x: X): AnyRef
+  }
+
+  object featureGenerator1 extends Feature[String] {
+    def run(x: String) = (i: Int, d: Double) => Map("ave" -> (d.toInt + i))
+  }
+
+  object featureGenerator2 {
+    def run(x: String) = (i: Int) => Map("dev" -> i)
+  }
+
+  object featureGenerator3 {
+    def run(x: String) = (s: String, i: Int) => Map("sum" -> (s.size + i + x.size))
+  }
+
+  //is possible to have generators with the same context, they will all be used
+  object featureGenerator3_1 {
+    def run(x: String) = (s: String, i: Int) => Map("sum2" -> (s.size + i * 2 + x.size))
+  }
+
+  object featureGenerator4 {
+    def run(x: String) = () => Map("size" -> (x.size))
+  }
+
   trait FeatureGenerator[X] {
     type Context
     def features(x: X, context: Context): Map[String, Int]
@@ -26,28 +70,12 @@ object Main {
   ) = new FeatureGenerator[String] {
     type Context = L
 
-    private def featureGenerator1(x: String) =
-      (i: Int, d: Double) => Map("ave" -> (d.toInt + i))
-
-    private def featureGenerator2(x: String) =
-      (i: Int) => Map("dev" -> i)
-
-    private def featureGenerator3(x: String) =
-      (s: String, i: Int) => Map("sum" -> (s.size + i + x.size))
-
-    //is possible to have generators with the same context, they will all be used
-    private def featureGenerator3_1(x: String) =
-      (s: String, i: Int) => Map("sum2" -> (s.size + i * 2 + x.size))
-
-    private def featureGenerator4(x: String) =
-      () => Map("size" -> (x.size))
-
     def features(x: String, context: Context): Map[String, Int] = {
-      applyContext(context)(featureGenerator1(x)) ++
-        applyContext(context)(featureGenerator2(x)) ++
-        applyContext(context)(featureGenerator3(x)) ++
-        applyContext(context)(featureGenerator3_1(x)) ++
-        applyContext(context)(featureGenerator4(x))
+      applyContext(context)(featureGenerator1.run(x)) ++
+        applyContext(context)(featureGenerator2.run(x)) ++
+        applyContext(context)(featureGenerator3.run(x)) ++
+        applyContext(context)(featureGenerator3_1.run(x)) ++
+        applyContext(context)(featureGenerator4.run(x))
     }
   }
 
@@ -58,19 +86,10 @@ object Main {
   ) = new FeatureGenerator[FeatureGenerator.Labeless.type] {
     type Context = L
 
-    private def featureGenerator1 =
-      (i: Int) => Map("dev" -> i)
-
-    private def featureGenerator2 =
-      (s: String, i: Int) => Map("sum" -> (s.size + i))
-
-    private def featureGenerator3 =
-      () => Map("size" -> 0)
-
     def features(x: FeatureGenerator.Labeless.type, context: Context): Map[String, Int] = {
-      applyContext(context)(featureGenerator1) ++
-        applyContext(context)(featureGenerator2) ++
-        applyContext(context)(featureGenerator3)
+      applyContext(context)(featureGenerator1L.run) ++
+        applyContext(context)(featureGenerator2L.run) ++
+        applyContext(context)(featureGenerator3L.run)
     }
   }
 
