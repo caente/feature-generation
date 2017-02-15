@@ -26,26 +26,21 @@ object Main {
   ) = new FeatureGenerator[String] {
     type Context = L
 
-    private def featureGenerator1(x: String): (Int, Double) => Map[String, Int] =
-      (i, d) =>
-        Map("ave" -> (d.toInt + i))
+    private def featureGenerator1(x: String) =
+      (i: Int, d: Double) => Map("ave" -> (d.toInt + i))
 
-    private def featureGenerator2(x: String): (Int) => Map[String, Int] =
-      i =>
-        Map("dev" -> i)
+    private def featureGenerator2(x: String) =
+      (i: Int) => Map("dev" -> i)
 
-    private def featureGenerator3(x: String): (String, Int) => Map[String, Int] =
-      (s, i) =>
-        Map("sum" -> (s.size + i + x.size))
+    private def featureGenerator3(x: String) =
+      (s: String, i: Int) => Map("sum" -> (s.size + i + x.size))
 
     //is possible to have generators with the same context, they will all be used
-    private def featureGenerator3_1(x: String): (String, Int) => Map[String, Int] =
-      (s, i) =>
-        Map("sum2" -> (s.size + i * 2 + x.size))
+    private def featureGenerator3_1(x: String) =
+      (s: String, i: Int) => Map("sum2" -> (s.size + i * 2 + x.size))
 
-    private def featureGenerator4(x: String): () => Map[String, Int] =
-      () =>
-        Map("size" -> (x.size))
+    private def featureGenerator4(x: String) =
+      () => Map("size" -> (x.size))
 
     def features(x: String, context: Context): Map[String, Int] = {
       applyContext(context)(featureGenerator1(x)) ++
@@ -63,17 +58,14 @@ object Main {
   ) = new FeatureGenerator[FeatureGenerator.Labeless.type] {
     type Context = L
 
-    private def featureGenerator1: (Int) => Map[String, Int] =
-      i =>
-        Map("dev" -> i)
+    private def featureGenerator1 =
+      (i: Int) => Map("dev" -> i)
 
-    private def featureGenerator2: (String, Int) => Map[String, Int] =
-      (s, i) =>
-        Map("sum" -> (s.size + i))
+    private def featureGenerator2 =
+      (s: String, i: Int) => Map("sum" -> (s.size + i))
 
-    private def featureGenerator3: () => Map[String, Int] =
-      () =>
-        Map("size" -> 0)
+    private def featureGenerator3 =
+      () => Map("size" -> 0)
 
     def features(x: FeatureGenerator.Labeless.type, context: Context): Map[String, Int] = {
       applyContext(context)(featureGenerator1) ++
