@@ -10,6 +10,7 @@ object Main {
   import utils.Find
   import utils.Subset
   import utils.applyContext
+  import utils.applyContexts
 
   trait GeneralFeature {
     def name: String = ??? // the name comes here
@@ -64,18 +65,24 @@ object Main {
   // the implicit `Find`s are for the types it _might_ need in its internal generators
   implicit def StringFeatures[L <: HList, F](
     implicit
-    si: Find[L, Int],
-    ss: Find[L, String],
-    sd: Find[L, Double]
+    si: Selector[L, Int],
+    ss: Selector[L, String],
+    sd: Selector[L, Double]
   ) = new FeatureGenerator[String] {
     type Context = L
 
     def features(x: String, context: Context): Map[String, Int] = {
-      applyContext(context)(featureGenerator1.run(x)) ++
-        applyContext(context)(featureGenerator2.run(x)) ++
-        applyContext(context)(featureGenerator3.run(x)) ++
-        applyContext(context)(featureGenerator3_1.run(x)) ++
-        applyContext(context)(featureGenerator4.run(x))
+      val fgs = featureGenerator1.run(x) ::
+        featureGenerator2.run(x) ::
+        featureGenerator3.run(x) ::
+        featureGenerator3_1.run(x) ::
+        featureGenerator4.run(x) :: HNil
+      applyContexts(context)(fgs)
+      //     applyContext(context)(featureGenerator1.run(x)) ++
+      //       applyContext(context)(featureGenerator2.run(x)) ++
+      //       applyContext(context)(featureGenerator3.run(x)) ++
+      //       applyContext(context)(featureGenerator3_1.run(x)) ++
+      //       applyContext(context)(featureGenerator4.run(x))
     }
   }
 
