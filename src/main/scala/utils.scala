@@ -33,22 +33,6 @@ object utils {
     }
   }
 
-  def applyAll[Context <: HList, Fs <: HList, R](context: Context)(fs: Fs)(
-    implicit
-    applyContext: ApplyAll.Aux[Fs, Context, R]
-  ): Seq[R] = applyContext(fs, context)
-
-  def applyAll[Context <: Product, HContext <: HList, Fs <: HList, R](context: Context)(fs: Fs)(
-    implicit
-    gen: Generic.Aux[Context, HContext],
-    applyContext: ApplyAll.Aux[Fs, HContext, R]
-  ): Seq[R] = applyContext(fs, gen.to(context))
-
-  def applyAll[X, Fs <: HList, R](x: X)(fs: Fs)(
-    implicit
-    applyContext: ApplyAll.Aux[Fs, X :: HNil, R]
-  ): Seq[R] = applyContext(fs, x :: HNil)
-
   trait Find[L <: HList, A] {
     def find(l: L): Option[A]
   }
