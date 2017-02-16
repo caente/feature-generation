@@ -56,20 +56,20 @@ object Main {
     // it works with tuples and case classes
     val hi = "hi"
     assert(
-      FeatureGenerators.features(hi) == Seq("string_size" -> 2)
+      FeatureGenerators.features(hi) == "string_size" -> 2 :: HNil
     )
     assert(
-      FeatureGenerators.features(hi, 1) == Seq("feature2" -> 1, "string_size" -> 2)
+      FeatureGenerators.features(hi, 1) == "feature2" -> 1 :: "string_size" -> 2 :: HNil
     )
     assert(
-      FeatureGenerators.features(hi, 1, 2d) == Seq("feature1" -> 3, "feature2" -> 1, "string_size" -> 2)
+      FeatureGenerators.features(hi, 1, 2d) == "feature1" -> 3 :: "feature2" -> 1 :: "string_size" -> 2 :: HNil
     )
     assert(
-      FeatureGenerators.features(hi, 'a', 1) == Seq("feature2" -> 1, "feature3" -> 100, "feature3_1" -> 101, "string_size" -> 2)
+      FeatureGenerators.features(hi, 'a', 1) == "feature2" -> 1 :: "feature3" -> 100 :: "feature3_1" -> 101 :: "string_size" -> 2 :: HNil
     )
     // the order of the arguments doesn't matter
     assert(
-      FeatureGenerators.features(hi, 2d, 1, 'a') == Seq("feature1" -> 3, "feature2" -> 1, "feature3" -> 100, "feature3_1" -> 101, "string_size" -> 2)
+      FeatureGenerators.features(hi, 2d, 1, 'a') == "feature1" -> 3 :: "feature2" -> 1 :: "feature3" -> 100 :: "feature3_1" -> 101 :: "string_size" -> 2 :: HNil
     )
   }
 }

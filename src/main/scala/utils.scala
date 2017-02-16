@@ -9,34 +9,32 @@ import scalaz._, Scalaz._
 object utils {
 
   trait ApplyAll[Fs <: HList, Context <: HList] {
-    type Out
-    def apply(fs: Fs, context: Context): Seq[Out]
+    def apply(fs: Fs, context: Context): HList
   }
 
   object ApplyAll {
-    type Aux[Fs <: HList, Context <: HList, R] = ApplyAll[Fs, Context] { type Out = R }
     implicit def hcons[F, Fs <: HList, Context <: HList, Args <: HList, R](
       implicit
       fp: FnToProduct.Aux[F, Args => R],
       subset: Subset[Context, Args],
-      applyContext: ApplyAll.Aux[Fs, Context, R]
-    ): ApplyAll.Aux[F :: Fs, Context, R] = new ApplyAll[F :: Fs, Context] {
-      type Out = R
+      applyContext: ApplyAll[Fs, Context]
+    ): ApplyAll[F :: Fs, Context] = new ApplyAll[F :: Fs, Context] {
       def apply(fs: F :: Fs, context: Context) =
-        subset(context).map(args => fs.head.toProduct(args)).toSeq ++
-          applyContext(fs.tail, context).toSeq
+        subset(context).map(
+          args =>
+            fs.head.toProduct(args) :: applyContext(fs.tail, context)
+        ).getOrElse(applyContext(fs.tail, context))
     }
 
-    implicit def hnil[Context <: HList, R]: ApplyAll.Aux[HNil, Context, R] = new ApplyAll[HNil, Context] {
-      type Out = R
-      def apply(fs: HNil, context: Context) = Seq.empty
+    implicit def hnil[Context <: HList]: ApplyAll[HNil, Context] = new ApplyAll[HNil, Context] {
+      def apply(fs: HNil, context: Context) = HNil
     }
   }
 
-  def applyAll[Context <: HList, Fs <: HList, R](context: Context)(fs: Fs)(
+  def applyAll[Context <: HList, Fs <: HList](context: Context)(fs: Fs)(
     implicit
-    applyContext: ApplyAll.Aux[Fs, Context, R]
-  ): Seq[R] = applyContext(fs, context)
+    applyContext: ApplyAll[Fs, Context]
+  ) = applyContext(fs, context)
 
   trait Find[L <: HList, A] {
     def find(l: L): Option[A]
