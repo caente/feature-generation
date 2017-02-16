@@ -10,14 +10,11 @@ object Main {
   import utils.Find
   import utils.applyAll
 
-  val featureGenerator1 = (x: String, i: Int, d: Double) => ("feature1" -> (d.toInt + i))
+  val featureGenerator1 = (x: String, i: Int, d: Double) => "feature1" -> (x + i.toString + d.toString)
 
-  val featureGenerator2 = (x: String, i: Int) => ("feature2" -> i)
+  val featureGenerator2 = (x: String, i: Int) => "feature2" -> x.map(_.toInt).sum * i
 
-  val featureGenerator3 = (x: String, s: Char, i: Int) => ("feature3" -> (s.toInt + i + x.size))
-
-  //is possible to have generators with the same context, they will all be used
-  val featureGenerator3_1 = (x: String, s: Char, i: Int) => ("feature3_1" -> (s.toInt + i * 2 + x.size))
+  val featureGenerator3 = (x: String, s: Char, i: Int) => "feature3" -> (x.map(_.toInt).sum * 0.5 + i)
 
   val featureGenerator4 = (x: String) => ("string_size" -> x.size)
 
@@ -27,7 +24,6 @@ object Main {
       featureGenerator1 ::
         featureGenerator2 ::
         featureGenerator3 ::
-        featureGenerator3_1 ::
         featureGenerator4 :: HNil
 
     def features[Context <: Product, HContext <: HList](context: Context)(
@@ -56,20 +52,25 @@ object Main {
     // it works with tuples and case classes
     val hi = "hi"
     assert(
-      FeatureGenerators.features(hi) == "string_size" -> 2 :: HNil
+      FeatureGenerators.features(hi) == "string_size" -> 2 :: HNil,
+      FeatureGenerators.features(hi)
     )
     assert(
-      FeatureGenerators.features(hi, 1) == "feature2" -> 1 :: "string_size" -> 2 :: HNil
+      FeatureGenerators.features(hi, 1) == "feature2" -> 209 :: "string_size" -> 2 :: HNil,
+      FeatureGenerators.features(hi, 1)
     )
     assert(
-      FeatureGenerators.features(hi, 1, 2d) == "feature1" -> 3 :: "feature2" -> 1 :: "string_size" -> 2 :: HNil
+      FeatureGenerators.features(hi, 1, 2d) == "feature1" -> "hi12.0" :: "feature2" -> 209 :: "string_size" -> 2 :: HNil,
+      FeatureGenerators.features(hi, 1, 2d)
     )
     assert(
-      FeatureGenerators.features(hi, 'a', 1) == "feature2" -> 1 :: "feature3" -> 100 :: "feature3_1" -> 101 :: "string_size" -> 2 :: HNil
+      FeatureGenerators.features(hi, 'a', 1) == "feature2" -> 209 :: "feature3" -> 105.5 :: "string_size" -> 2 :: HNil,
+      FeatureGenerators.features(hi, 'a', 1)
     )
     // the order of the arguments doesn't matter
     assert(
-      FeatureGenerators.features(hi, 2d, 1, 'a') == "feature1" -> 3 :: "feature2" -> 1 :: "feature3" -> 100 :: "feature3_1" -> 101 :: "string_size" -> 2 :: HNil
+      FeatureGenerators.features(hi, 2d, 1, 'a') == "feature1" -> "hi12.0" :: "feature2" -> 209 :: "feature3" -> 105.5 :: "string_size" -> 2 :: HNil,
+      FeatureGenerators.features(hi, 2d, 1, 'a')
     )
   }
 }
