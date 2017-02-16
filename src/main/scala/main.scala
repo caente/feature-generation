@@ -30,18 +30,18 @@ object Main {
         featureGenerator3_1 ::
         featureGenerator4 :: HNil
 
-    def applyAll[Context <: HList, Fs <: HList, R](context: Context)(fs: Fs)(
+    def features[Context <: HList, Fs <: HList, R](context: Context)(fs: Fs)(
       implicit
       applyContext: ApplyAll.Aux[Fs, Context, R]
     ): Seq[R] = applyContext(fs, context)
 
-    def applyAll[Context <: Product, HContext <: HList, Fs <: HList, R](context: Context)(fs: Fs)(
+    def features[Context <: Product, HContext <: HList, Fs <: HList, R](context: Context)(fs: Fs)(
       implicit
       gen: Generic.Aux[Context, HContext],
       applyContext: ApplyAll.Aux[Fs, HContext, R]
     ): Seq[R] = applyContext(fs, gen.to(context))
 
-    def applyAll[X, Fs <: HList, R](x: X)(fs: Fs)(
+    def features[X, Fs <: HList, R](x: X)(fs: Fs)(
       implicit
       applyContext: ApplyAll.Aux[Fs, X :: HNil, R]
     ): Seq[R] = applyContext(fs, x :: HNil)
@@ -52,20 +52,20 @@ object Main {
     // it works with tuples and case classes
     val hi = "hi"
     assert(
-      FeatureGenerators.applyAll(hi)(FeatureGenerators.generators) == Seq("string_size" -> 2)
+      FeatureGenerators.features(hi)(FeatureGenerators.generators) == Seq("string_size" -> 2)
     )
     assert(
-      FeatureGenerators.applyAll(hi, 1)(FeatureGenerators.generators) == Seq("feature2" -> 1, "string_size" -> 2)
+      FeatureGenerators.features(hi, 1)(FeatureGenerators.generators) == Seq("feature2" -> 1, "string_size" -> 2)
     )
     assert(
-      FeatureGenerators.applyAll(hi, 1, 2d)(FeatureGenerators.generators) == Seq("feature1" -> 3, "feature2" -> 1, "string_size" -> 2)
+      FeatureGenerators.features(hi, 1, 2d)(FeatureGenerators.generators) == Seq("feature1" -> 3, "feature2" -> 1, "string_size" -> 2)
     )
     assert(
-      FeatureGenerators.applyAll(hi, 'a', 1)(FeatureGenerators.generators) == Seq("feature2" -> 1, "feature3" -> 100, "feature3_1" -> 101, "string_size" -> 2)
+      FeatureGenerators.features(hi, 'a', 1)(FeatureGenerators.generators) == Seq("feature2" -> 1, "feature3" -> 100, "feature3_1" -> 101, "string_size" -> 2)
     )
     // the order of the arguments doesn't matter
     assert(
-      FeatureGenerators.applyAll(hi, 2d, 1, 'a')(FeatureGenerators.generators) == Seq("feature1" -> 3, "feature2" -> 1, "feature3" -> 100, "feature3_1" -> 101, "string_size" -> 2)
+      FeatureGenerators.features(hi, 2d, 1, 'a')(FeatureGenerators.generators) == Seq("feature1" -> 3, "feature2" -> 1, "feature3" -> 100, "feature3_1" -> 101, "string_size" -> 2)
     )
   }
 }
